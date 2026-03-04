@@ -1,0 +1,27 @@
+#Definy a chunkying function
+def chunks(iterable, batch_size=100):
+    it = iter(iterable)
+    chunk = tuple(itertools.islice(it,batch_size))
+    while chunk:
+        yield chunk #This acts as a return but without finishing the execution
+        chunk = tuple(itertools.islice(it, batch_size))
+
+#Sequentianl batching
+# Splitting requests and sending them sequentially one-by-one
+# This solution can be really slow
+pc.Pinecone(apy_key="my-api-key")
+index = pc.Index('Index-name')
+
+for chunk in chunks(vectors):
+    index.upsert(vectors=chunk)
+
+#Parallel batching
+# Many batches can be sent at the same time
+pc = Pinecone(api_key="my-api-key", pool_threads=30)
+
+with pc.Index('Index-name', pool_threads=30) as index:
+    async_results = [
+        index.upsert(vectors=chunk, async_req=True)
+        for chunk in chunks(vectors, batch_size=100)
+    ]
+    [async_result for async_result in async_results]
